@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Прогноз погоды</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Шапка приложения -->
+    <header>
+      <h1>Погода</h1>
+      <button id="refreshBtn">Обновить</button>
+    </header>
+
+    <!-- Основной контент -->
+    <main>
+      <!-- Текущее местоположение -->
+      <section class="current-location">
+        <h2>Текущее местоположение</h2>
+        <div class="weather-info" id="currentWeather">
+          <!-- Здесь будет информация о погоде -->
+        </div>
+      </section>
+
+      <!-- Дополнительные города -->
+      <section class="other-cities">
+        <h2>Дополнительные города</h2>
+        <form id="cityForm">
+          <input type="text" id="cityInput" placeholder="Введите город">
+          <button type="submit">Добавить</button>
+          <div id="error" class="error-message"></div>
+        </form>
+        <ul id="cityList"></ul>
+      </section>
+    </main>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
