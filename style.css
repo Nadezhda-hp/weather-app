@@ -1,0 +1,118 @@
+/* Сброс базовых стилей */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #e0f7fa;
+  color: #333;
+}
+
+.app {
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  min-height: 100vh;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  border-radius: 12px;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  margin: 0;
+  font-size: 1.8em;
+  color: #00796b;
+}
+
+button {
+  cursor: pointer;
+  padding: 8px 15px;
+  background: #00796b;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9em;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background: #004d40;
+}
+
+main {
+  margin-top: 20px;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+/* Карточка погоды */
+.weather-info {
+  padding: 15px;
+  background: #b2dfdb;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Список городов */
+#cityList li {
+  display: flex;            /* Делаем flex-контейнер */
+  justify-content: space-between; /* Текст слева, кнопка справа */
+  align-items: center;
+  padding: 10px;
+  background: #e0f2f1;
+  border-radius: 8px;
+  margin-top: 8px;
+  list-style: none;
+  box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+}
+
+/* Кнопка удаления */
+.delete-btn {
+  background: #d32f2f;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.delete-btn:hover {
+  background: #9a0007;
+}
+
+/* Форма ввода города */
+#cityForm {
+  position: relative;
+}
+
+#cityInput {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9em;
+  margin-top: 5px;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  header {
+    flex-direction: column;
+    gap: 10px;
+  }
+}
