@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -8,35 +8,26 @@
 </head>
 <body>
   <div class="app">
-    <!-- Шапка приложения -->
-    <header>
-      <h1>Погода</h1>
-      <button id="refreshBtn">Обновить</button>
+    <header class="header">
+      <h1>Прогноз погоды</h1>
+      <div class="header-actions">
+        <button class="btn btn-geo" id="btn-geo" title="Определить местоположение">Геолокация</button>
+        <button class="btn btn-refresh" id="btn-refresh" title="Обновить">&#8635; Обновить</button>
+      </div>
     </header>
 
-    <!-- Основной контент -->
-    <main>
-      <!-- Текущее местоположение -->
-      <section class="current-location">
-        <h2>Текущее местоположение</h2>
-        <div class="weather-info" id="currentWeather">
-          <!-- Здесь будет информация о погоде -->
-        </div>
-      </section>
+    <section class="add-city-section hidden" id="add-city-section">
+      <div class="search-wrapper">
+        <input type="text" class="city-input" id="city-input" placeholder="Введите город..." autocomplete="off">
+        <button class="btn btn-add" id="btn-add">Добавить</button>
+        <div class="dropdown hidden" id="dropdown"></div>
+      </div>
+      <p class="input-error hidden" id="input-error"></p>
+    </section>
 
-      <!-- Дополнительные города -->
-      <section class="other-cities">
-        <h2>Дополнительные города</h2>
-        <form id="cityForm">
-          <input type="text" id="cityInput" placeholder="Введите город">
-          <button type="submit">Добавить</button>
-          <div id="error" class="error-message"></div>
-        </form>
-        <ul id="cityList"></ul>
-      </section>
-    </main>
+    <section class="cards-container" id="cards-container"></section>
   </div>
 
-  <script src="main.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
