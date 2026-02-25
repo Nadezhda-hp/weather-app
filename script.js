@@ -139,7 +139,14 @@
   }
 
   function renderCardError(card, msg) {
-    card.innerHTML = '';
+    var oldLoading = card.querySelector('.card-loading');
+    if (oldLoading) card.removeChild(oldLoading);
+    var oldCurrent = card.querySelector('.current-weather');
+    if (oldCurrent) card.removeChild(oldCurrent);
+    var oldForecast = card.querySelector('.forecast');
+    if (oldForecast) card.removeChild(oldForecast);
+    var oldError = card.querySelector('.card-error');
+    if (oldError) card.removeChild(oldError);
 
     var err = document.createElement('div');
     err.className = 'card-error';
@@ -157,7 +164,14 @@
   }
 
   function renderCardWeather(card, data) {
-    card.innerHTML = card.querySelector('.card-header').outerHTML;
+    var oldLoading = card.querySelector('.card-loading');
+    if (oldLoading) card.removeChild(oldLoading);
+    var oldCurrent = card.querySelector('.current-weather');
+    if (oldCurrent) card.removeChild(oldCurrent);
+    var oldForecast = card.querySelector('.forecast');
+    if (oldForecast) card.removeChild(oldForecast);
+    var oldError = card.querySelector('.card-error');
+    if (oldError) card.removeChild(oldError);
 
     var current = data.current_weather;
     var daily = data.daily;
