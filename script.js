@@ -1,4 +1,4 @@
-(function () {
+﻿(function () {
   'use strict';
 
   var GEO_API = 'https://geocoding-api.open-meteo.com/v1/search';
@@ -7,11 +7,19 @@
   var container = document.getElementById('cards-container');
   var cityInput = document.getElementById('city-input');
   var btnAdd = document.getElementById('btn-add');
+  var btnGeo = document.getElementById('btn-geo');
   var btnRefresh = document.getElementById('btn-refresh');
+  var addCitySection = document.getElementById('add-city-section');
   var dropdown = document.getElementById('dropdown');
   var inputError = document.getElementById('input-error');
 
+  var switcher = document.createElement('section');
+  switcher.className = 'city-switcher';
+  switcher.id = 'city-switcher';
+  container.parentNode.insertBefore(switcher, container);
+
   var cities = [];
+  var activeCityId = null;
   var searchTimeout = null;
   var selectedGeo = null;
 
@@ -32,12 +40,12 @@
   var WMO_TEXT = {
     0: 'Ясно', 1: 'Малооблачно', 2: 'Переменная облачность', 3: 'Облачно',
     45: 'Туман', 48: 'Изморозь',
-    51: 'Лёгкая морось', 53: 'Морось', 55: 'Сильная морось',
+    51: 'Легкая морось', 53: 'Морось', 55: 'Сильная морось',
     56: 'Ледяная морось', 57: 'Ледяная морось',
     61: 'Небольшой дождь', 63: 'Дождь', 65: 'Сильный дождь',
     66: 'Ледяной дождь', 67: 'Ледяной дождь',
     71: 'Небольшой снег', 73: 'Снег', 75: 'Сильный снег',
-    77: 'Снежные зёрна',
+    77: 'Снежные зерна',
     80: 'Ливень', 81: 'Сильный ливень', 82: 'Очень сильный ливень',
     85: 'Снегопад', 86: 'Сильный снегопад',
     95: 'Гроза', 96: 'Гроза с градом', 99: 'Сильная гроза'
@@ -53,10 +61,9 @@
     return DAYS_RU[d.getDay()] + ', ' + d.getDate() + ' ' + MONTHS_RU[d.getMonth()];
   }
 
-  // ---- localStorage ----
-
   function saveCities() {
     localStorage.setItem('weather_cities', JSON.stringify(cities));
+    localStorage.setItem('weather_active_city', activeCityId || '');
   }
 
   function loadCities() {
@@ -66,9 +73,28 @@
     } catch (e) { return []; }
   }
 
-  // ---- Card Rendering ----
+  function loadActiveCityId() {
+    return localStorage.getItem('weather_active_city') || null;
+  }
+
+  function showError(msg) {
+    inputError.textContent = msg;
+    inputError.classList.remove('hidden');
+    setTimeout(function () { inputError.classList.add('hidden'); }, 4500);
+  }
+
+  function showAddCitySection() {
+    addCitySection.classList.remove('hidden');
+  }
+
+  function hideDropdown() {
+    dropdown.classList.add('hidden');
+    dropdown.innerHTML = '';
+  }
 
   function renderCardLoading(city) {
+    container.innerHTML = '';
+
     var card = document.createElement('div');
     card.className = 'weather-card';
     card.setAttribute('data-id', city.id);
@@ -108,30 +134,30 @@
     loading.appendChild(text);
     card.appendChild(loading);
 
+    container.appendChild(card);
     return card;
   }
 
   function renderCardError(card, msg) {
-    var old = card.querySelector('.card-loading');
-    if (old) card.removeChild(old);
+    card.innerHTML = '';
 
     var err = document.createElement('div');
     err.className = 'card-error';
+
     var icon = document.createElement('div');
     icon.className = 'error-icon';
     icon.textContent = '⚠️';
     err.appendChild(icon);
+
     var p = document.createElement('p');
     p.textContent = msg;
     err.appendChild(p);
+
     card.appendChild(err);
   }
 
-  function renderCardWeather(card, data, city) {
-    var old = card.querySelector('.card-loading');
-    if (old) card.removeChild(old);
-    var oldErr = card.querySelector('.card-error');
-    if (oldErr) card.removeChild(oldErr);
+  function renderCardWeather(card, data) {
+    card.innerHTML = card.querySelector('.card-header').outerHTML;
 
     var current = data.current_weather;
     var daily = data.daily;
@@ -205,14 +231,37 @@
     card.appendChild(forecast);
   }
 
-  // ---- Weather API ----
+  function renderCitySwitcher() {
+    switcher.innerHTML = '';
+
+    if (!cities.length) {
+      switcher.classList.add('hidden');
+      return;
+    }
+
+    switcher.classList.remove('hidden');
+
+    cities.forEach(function (city) {
+      var btn = document.createElement('button');
+      btn.className = 'city-tab' + (city.id === activeCityId ? ' active' : '');
+      btn.textContent = city.isGeo ? '📍 ' + city.name : city.name;
+      btn.addEventListener('click', function () {
+        activeCityId = city.id;
+        saveCities();
+        renderCitySwitcher();
+        fetchWeather(city);
+      });
+      switcher.appendChild(btn);
+    });
+  }
 
   function fetchWeather(city) {
-    var existing = container.querySelector('[data-id="' + city.id + '"]');
-    if (existing) container.removeChild(existing);
+    if (!city) {
+      container.innerHTML = '';
+      return;
+    }
 
     var card = renderCardLoading(city);
-    container.appendChild(card);
 
     var url = WEATHER_API +
       '?latitude=' + city.lat +
@@ -228,45 +277,66 @@
         return res.json();
       })
       .then(function (data) {
-        renderCardWeather(card, data, city);
+        renderCardWeather(card, data);
       })
       .catch(function (err) {
         renderCardError(card, 'Не удалось загрузить погоду: ' + err.message);
       });
   }
 
-  function refreshAll() {
-    container.innerHTML = '';
-    cities.forEach(function (c) { fetchWeather(c); });
+  function getActiveCity() {
+    for (var i = 0; i < cities.length; i++) {
+      if (cities[i].id === activeCityId) return cities[i];
+    }
+    return null;
   }
 
-  // ---- City Management ----
+  function showActiveCityWeather() {
+    var city = getActiveCity();
+    if (!city && cities.length) {
+      activeCityId = cities[0].id;
+      saveCities();
+      city = cities[0];
+    }
+    renderCitySwitcher();
+    fetchWeather(city);
+  }
 
-  function addCity(cityData) {
+  function addCity(cityData, makeActive) {
     var exists = cities.some(function (c) {
       return c.lat === cityData.lat && c.lon === cityData.lon;
     });
+
     if (exists) {
       showError('Этот город уже добавлен');
       return;
     }
 
     cities.push(cityData);
+    if (makeActive || !activeCityId) activeCityId = cityData.id;
     saveCities();
-    fetchWeather(cityData);
+    showActiveCityWeather();
   }
 
   function removeCity(id) {
+    var removedActive = activeCityId === id;
     cities = cities.filter(function (c) { return c.id !== id; });
+
+    if (!cities.length) {
+      activeCityId = null;
+    } else if (removedActive) {
+      activeCityId = cities[0].id;
+    }
+
     saveCities();
-    var card = container.querySelector('[data-id="' + id + '"]');
-    if (card) container.removeChild(card);
+    showActiveCityWeather();
   }
 
-  // ---- Geocoding Search ----
-
   function searchCities(query) {
-    if (query.length < 2) { hideDropdown(); return; }
+    if (query.length < 2) {
+      hideDropdown();
+      return;
+    }
 
     fetch(GEO_API + '?name=' + encodeURIComponent(query) + '&count=6&language=ru')
       .then(function (res) { return res.json(); })
@@ -311,67 +381,66 @@
     });
   }
 
-  function hideDropdown() {
-    dropdown.classList.add('hidden');
-    dropdown.innerHTML = '';
-  }
+  function upsertGeoCity(latitude, longitude) {
+    var lat = Math.round(latitude * 100) / 100;
+    var lon = Math.round(longitude * 100) / 100;
 
-  function showError(msg) {
-    inputError.textContent = msg;
-    inputError.classList.remove('hidden');
-    setTimeout(function () { inputError.classList.add('hidden'); }, 4000);
-  }
+    var geoCity = {
+      id: 'geo_current',
+      name: 'Текущее местоположение',
+      lat: lat,
+      lon: lon,
+      isGeo: true
+    };
 
-  // ---- Geolocation ----
+    var existingIndex = -1;
+    for (var i = 0; i < cities.length; i++) {
+      if (cities[i].isGeo) {
+        existingIndex = i;
+        break;
+      }
+    }
+
+    if (existingIndex === -1) {
+      cities.unshift(geoCity);
+    } else {
+      cities[existingIndex] = geoCity;
+    }
+
+    activeCityId = geoCity.id;
+    saveCities();
+    showActiveCityWeather();
+  }
 
   function requestGeo() {
-    if (!navigator.geolocation) return;
+    if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+      showAddCitySection();
+      showError('Геолокация в браузере работает только по HTTPS. Введите город вручную.');
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      showAddCitySection();
+      showError('Геолокация не поддерживается браузером. Введите город вручную.');
+      return;
+    }
 
     navigator.geolocation.getCurrentPosition(
       function (pos) {
-        var lat = Math.round(pos.coords.latitude * 100) / 100;
-        var lon = Math.round(pos.coords.longitude * 100) / 100;
-
-        fetch(GEO_API + '?latitude=' + lat + '&longitude=' + lon + '&count=1&language=ru')
-          .then(function (r) { return r.json(); })
-          .catch(function () { return null; })
-          .then(function (data) {
-            var name = 'Текущее местоположение';
-            if (data && data.results && data.results.length > 0) {
-              name = data.results[0].name;
-            }
-
-            var geoCity = {
-              id: 'geo_current',
-              name: name,
-              lat: lat,
-              lon: lon,
-              isGeo: true
-            };
-
-            var hasGeo = cities.some(function (c) { return c.isGeo; });
-            if (!hasGeo) {
-              cities.unshift(geoCity);
-              saveCities();
-            } else {
-              cities = cities.map(function (c) {
-                return c.isGeo ? geoCity : c;
-              });
-              saveCities();
-            }
-
-            refreshAll();
-          });
+        upsertGeoCity(pos.coords.latitude, pos.coords.longitude);
+        showAddCitySection();
       },
       function () {
-        if (cities.length === 0) {
-          showError('Геолокация отклонена. Добавьте город вручную.');
-        }
+        showAddCitySection();
+        showError('Геолокация отклонена. Введите город вручную.');
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 10000,
+        maximumAge: 600000
       }
     );
   }
-
-  // ---- Events ----
 
   cityInput.addEventListener('input', function () {
     selectedGeo = null;
@@ -396,15 +465,15 @@
   btnAdd.addEventListener('click', function () {
     hideDropdown();
     inputError.classList.add('hidden');
-    var val = cityInput.value.trim();
 
+    var val = cityInput.value.trim();
     if (!val) {
       showError('Введите название города');
       return;
     }
 
     if (selectedGeo) {
-      addCity(selectedGeo);
+      addCity(selectedGeo, true);
       cityInput.value = '';
       selectedGeo = null;
       return;
@@ -417,6 +486,7 @@
           showError('Город "' + val + '" не найден. Выберите из списка.');
           return;
         }
+
         var r = data.results[0];
         addCity({
           id: 'city_' + r.latitude + '_' + r.longitude,
@@ -424,7 +494,8 @@
           lat: r.latitude,
           lon: r.longitude,
           isGeo: false
-        });
+        }, true);
+
         cityInput.value = '';
       })
       .catch(function () {
@@ -433,19 +504,24 @@
   });
 
   btnRefresh.addEventListener('click', function () {
-    refreshAll();
+    showActiveCityWeather();
   });
 
-  // ---- Init ----
+  btnGeo.addEventListener('click', function () {
+    requestGeo();
+  });
 
   cities = loadCities();
+  activeCityId = loadActiveCityId();
 
-  if (cities.length > 0) {
-    refreshAll();
-    var hasGeo = cities.some(function (c) { return c.isGeo; });
-    if (hasGeo) requestGeo();
-  } else {
-    requestGeo();
+  if (!activeCityId && cities.length) {
+    activeCityId = cities[0].id;
   }
 
+  if (cities.length > 0) {
+    showAddCitySection();
+  }
+
+  showActiveCityWeather();
+  requestGeo();
 })();

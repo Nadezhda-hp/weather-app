@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
@@ -10,10 +10,13 @@
   <div class="app">
     <header class="header">
       <h1>Прогноз погоды</h1>
-      <button class="btn btn-refresh" id="btn-refresh" title="Обновить">&#8635; Обновить</button>
+      <div class="header-actions">
+        <button class="btn btn-geo" id="btn-geo" title="Определить местоположение">Геолокация</button>
+        <button class="btn btn-refresh" id="btn-refresh" title="Обновить">&#8635; Обновить</button>
+      </div>
     </header>
 
-    <section class="add-city-section" id="add-city-section">
+    <section class="add-city-section hidden" id="add-city-section">
       <div class="search-wrapper">
         <input type="text" class="city-input" id="city-input" placeholder="Введите город..." autocomplete="off">
         <button class="btn btn-add" id="btn-add">Добавить</button>

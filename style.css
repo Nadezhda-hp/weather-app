@@ -43,6 +43,12 @@ body {
   font-weight: 700;
 }
 
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
 .btn {
   border: none;
   cursor: pointer;
@@ -58,6 +64,14 @@ body {
   background: var(--primary);
   color: #fff;
   padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.btn-geo {
+  background: #0f766e;
+  color: #fff;
+  padding: 10px 14px;
   font-size: 14px;
   font-weight: 600;
 }
@@ -302,4 +316,31 @@ body {
   .current-temp { font-size: 34px; }
   .current-icon { font-size: 38px; }
   .forecast-day { min-width: 75px; padding: 10px 6px; }
+}
+.city-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.city-tab {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.city-tab:hover {
+  border-color: var(--primary);
+}
+
+.city-tab.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
 }
